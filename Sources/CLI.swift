@@ -89,7 +89,7 @@ enum CLI {
 
     // MARK: - Version
 
-    static let version = "0.5.3"
+    static let version = "0.5.4"
 
     static func printVersion() {
         print("gazectl \(version)")

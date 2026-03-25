@@ -154,9 +154,6 @@ let switchCooldown: TimeInterval = 0.5   // minimum seconds between switches
 var lastSwitchTime = Date.distantPast
 
 while running {
-    // Sync with reality so manual cursor moves are respected
-    currentMonitor = MonitorManager.currentMonitor()
-
     if let yaw = faceTracker.latestYaw {
         let target = Calibration.targetMonitor(yaw: yaw, calibration: cal, currentMonitor: currentMonitor ?? 0)
 
@@ -168,7 +165,7 @@ while running {
         let now = Date()
         if target != currentMonitor && now.timeIntervalSince(lastSwitchTime) >= switchCooldown {
             let name = monitors.first { $0.id == target }?.name ?? "?"
-            MonitorManager.focusMonitor(target)
+            MonitorManager.focusMonitor(target, focusedMonitor: currentMonitor)
             currentMonitor = target
             lastSwitchTime = now
             CLI.printFocusSwitch(name)

@@ -37,19 +37,39 @@ enum MonitorManager {
         return nil
     }
 
-    static func focusMonitor(_ id: Int) {
-        // Skip if cursor is already on this monitor (e.g. user moved it manually)
-        if currentMonitor() == id { return }
+    /// Focus a monitor by moving the cursor and/or clicking as needed.
+    ///
+    /// - `focusedMonitor`: the monitor macOS currently considers focused
+    ///   (tracked by the caller based on gaze, NOT cursor position).
+    static func focusMonitor(_ id: Int, focusedMonitor: Int?) {
+        let cursorOn = currentMonitor()
+        let alreadyFocused = focusedMonitor == id
+        let cursorAlreadyThere = cursorOn == id
+
+        // Case 4: already focused and cursor already there — nothing to do
+        if alreadyFocused && cursorAlreadyThere { return }
 
         let displayID = CGDirectDisplayID(id)
         let bounds = CGDisplayBounds(displayID)
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
-        CGWarpMouseCursorPosition(center)
-        // Click to focus the window under the cursor
-        let mouseDown = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: center, mouseButton: .left)
-        let mouseUp = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: center, mouseButton: .left)
-        mouseDown?.post(tap: .cghidEventTap)
-        mouseUp?.post(tap: .cghidEventTap)
+
+        // Cases 1 & 3: cursor is on the wrong monitor — move it
+        if !cursorAlreadyThere {
+            CGWarpMouseCursorPosition(center)
+        }
+
+        // Cases 1 & 2: monitor isn't focused — click to focus
+        if !alreadyFocused {
+            // If cursor was already on the target, click where it is (don't move it).
+            // CGEvent uses top-left origin coordinates.
+            let clickPos = cursorAlreadyThere
+                ? CGEvent(source: nil)?.location ?? center
+                : center
+            let mouseDown = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: clickPos, mouseButton: .left)
+            let mouseUp = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: clickPos, mouseButton: .left)
+            mouseDown?.post(tap: .cghidEventTap)
+            mouseUp?.post(tap: .cghidEventTap)
+        }
     }
 
     private static func screenName(for displayID: CGDirectDisplayID) -> String? {
