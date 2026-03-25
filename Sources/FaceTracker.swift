@@ -5,12 +5,16 @@ final class FaceTracker {
     private let camera = CameraCapture()
     private let lock = NSLock()
     private var _latestYaw: Double?
+    private var _smoothedYaw: Double?
     private var _frameCount: Int = 0
+
+    /// EMA smoothing factor (0–1). Lower = smoother / more lag, higher = more responsive / more noise.
+    private let smoothing: Double = 0.3
 
     var latestYaw: Double? {
         lock.lock()
         defer { lock.unlock() }
-        return _latestYaw
+        return _smoothedYaw
     }
 
     var frameCount: Int {
@@ -53,6 +57,11 @@ final class FaceTracker {
 
         lock.lock()
         _latestYaw = yawDegrees
+        if let prev = _smoothedYaw {
+            _smoothedYaw = prev + smoothing * (yawDegrees - prev)
+        } else {
+            _smoothedYaw = yawDegrees
+        }
         _frameCount += 1
         lock.unlock()
     }
