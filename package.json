@@ -1,0 +1,31 @@
+{
+  "name": "swivl",
+  "version": "0.1.0",
+  "description": "Head tracking display focus switcher for macOS + Aerospace",
+  "bin": {
+    "swivl": "bin/swivl"
+  },
+  "files": [
+    "bin/swivl",
+    "swivl.py",
+    "requirements.txt"
+  ],
+  "keywords": [
+    "head-tracking",
+    "display",
+    "monitor",
+    "focus",
+    "aerospace",
+    "macos",
+    "mediapipe",
+    "webcam"
+  ],
+  "os": ["darwin"],
+  "author": "Sahaj Jain",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sahajjain/swivl.git"
+  },
+  "homepage": "https://github.com/sahajjain/swivl"
+}

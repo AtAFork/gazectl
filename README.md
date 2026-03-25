@@ -1,42 +1,54 @@
-# headtrack
+# swivl
 
 Head tracking display focus switcher for macOS + [Aerospace](https://github.com/nikitabobko/AerospaceWM).
 
-Uses your webcam + MediaPipe to detect which direction your head is turned, then automatically switches Aerospace monitor focus.
+Uses your webcam and MediaPipe to detect which way your head is turned, then switches Aerospace monitor focus automatically.
 
-## Setup
+## Install
 
 ```bash
-cd ~/personal/code/headtrack
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+npm i -g swivl
 ```
+
+Or run directly:
+
+```bash
+npx swivl
+```
+
+Requires Python 3.9+ and [Aerospace](https://github.com/nikitabobko/AerospaceWM). First run sets up a Python venv and downloads the MediaPipe model automatically.
 
 ## Usage
 
 ```bash
-# Basic - auto-detects monitors
-python headtrack.py
+# First run — calibrates automatically
+swivl
 
-# With camera preview (useful for calibration)
-python headtrack.py --preview --verbose
+# With verbose logging
+swivl --verbose
 
-# Custom monitor mapping
-python headtrack.py --left-monitor 2 --right-monitor 1
-
-# Tune sensitivity
-python headtrack.py --threshold 15 --debounce 0.5
+# Force recalibration
+swivl --calibrate
 ```
+
+On first run, swivl asks you to look at each monitor and press Enter. It samples your head angle for 2 seconds per monitor, then saves calibration to `~/.local/share/swivl/calibration.json`.
 
 ## Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--left-monitor` | auto | Aerospace monitor ID for left display |
-| `--right-monitor` | auto | Aerospace monitor ID for right display |
-| `--threshold` | 12.0 | Yaw angle (degrees) to trigger switch |
-| `--debounce` | 0.4 | Seconds head must stay turned |
+| `--calibrate` | off | Force recalibration |
+| `--calibration-file` | `~/.local/share/swivl/calibration.json` | Custom calibration path |
 | `--camera` | 0 | Camera index |
-| `--preview` | off | Show camera preview window |
+| `--preview` | off | Show camera preview (steals focus — calibration only) |
 | `--verbose` | off | Print yaw angle continuously |
+
+## How it works
+
+1. **Calibrate** — look at each monitor, swivl records the yaw angle
+2. **Track** — MediaPipe Face Landmarker detects head yaw in real-time (~30fps)
+3. **Switch** — when yaw crosses the midpoint between calibrated angles, fires `aerospace focus-monitor`
+
+## License
+
+MIT

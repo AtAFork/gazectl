@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -e
+
+SWIVL_DIR="${SWIVL_HOME:-$HOME/.local/share/swivl}"
+VENV_DIR="$SWIVL_DIR/venv"
+MODEL_FILE="$SWIVL_DIR/face_landmarker.task"
+MODEL_URL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task"
+
+# Find the swivl.py script (relative to this bin script)
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SWIVL_PY="$SCRIPT_DIR/swivl.py"
+REQUIREMENTS="$SCRIPT_DIR/requirements.txt"
+
+if [ ! -f "$SWIVL_PY" ]; then
+  echo "error: swivl.py not found at $SWIVL_PY" >&2
+  exit 1
+fi
+
+# Check for python3
+if ! command -v python3 &>/dev/null; then
+  echo "error: python3 is required but not found" >&2
+  echo "install: brew install python3" >&2
+  exit 1
+fi
+
+# Setup on first run
+if [ ! -d "$VENV_DIR" ]; then
+  echo "swivl: first-run setup..."
+  mkdir -p "$SWIVL_DIR"
+
+  echo "  creating python venv..."
+  python3 -m venv "$VENV_DIR"
+
+  echo "  installing dependencies..."
+  "$VENV_DIR/bin/pip" install -q -r "$REQUIREMENTS"
+
+  echo "  done."
+fi
+
+# Download model if missing
+if [ ! -f "$MODEL_FILE" ]; then
+  echo "  downloading face landmarker model..."
+  curl -sL -o "$MODEL_FILE" "$MODEL_URL"
+  echo "  done."
+fi
+
+# Symlink model into script dir if needed (swivl.py looks for it there)
+SCRIPT_MODEL="$SCRIPT_DIR/face_landmarker.task"
+if [ ! -f "$SCRIPT_MODEL" ] && [ ! -L "$SCRIPT_MODEL" ]; then
+  ln -s "$MODEL_FILE" "$SCRIPT_MODEL" 2>/dev/null || true
+fi
+
+exec "$VENV_DIR/bin/python" "$SWIVL_PY" "$@"
