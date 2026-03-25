@@ -154,6 +154,9 @@ let switchCooldown: TimeInterval = 0.5   // minimum seconds between switches
 var lastSwitchTime = Date.distantPast
 
 while running {
+    // Sync with reality so manual cursor moves are respected
+    currentMonitor = MonitorManager.currentMonitor()
+
     if let yaw = faceTracker.latestYaw {
         let target = Calibration.targetMonitor(yaw: yaw, calibration: cal, currentMonitor: currentMonitor ?? 0)
 

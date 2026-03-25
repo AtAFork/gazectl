@@ -38,10 +38,18 @@ enum MonitorManager {
     }
 
     static func focusMonitor(_ id: Int) {
+        // Skip if cursor is already on this monitor (e.g. user moved it manually)
+        if currentMonitor() == id { return }
+
         let displayID = CGDirectDisplayID(id)
         let bounds = CGDisplayBounds(displayID)
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
         CGWarpMouseCursorPosition(center)
+        // Click to focus the window under the cursor
+        let mouseDown = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: center, mouseButton: .left)
+        let mouseUp = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: center, mouseButton: .left)
+        mouseDown?.post(tap: .cghidEventTap)
+        mouseUp?.post(tap: .cghidEventTap)
     }
 
     private static func screenName(for displayID: CGDirectDisplayID) -> String? {
