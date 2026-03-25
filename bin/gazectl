@@ -1,53 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-GAZECTL_DIR="${GAZECTL_HOME:-$HOME/.local/share/gazectl}"
-VENV_DIR="$GAZECTL_DIR/venv"
-MODEL_FILE="$GAZECTL_DIR/face_landmarker.task"
-MODEL_URL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task"
+# Resolve symlinks to find actual package directory
+# (npm symlinks bin scripts from node_modules/.bin/)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BIN_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
 
-# Find the gazectl.py script (relative to this bin script)
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-GAZECTL_PY="$SCRIPT_DIR/gazectl.py"
-REQUIREMENTS="$SCRIPT_DIR/requirements.txt"
-
-if [ ! -f "$GAZECTL_PY" ]; then
-  echo "error: gazectl.py not found at $GAZECTL_PY" >&2
-  exit 1
-fi
-
-# Check for python3
-if ! command -v python3 &>/dev/null; then
-  echo "error: python3 is required but not found" >&2
-  echo "install: brew install python3" >&2
-  exit 1
-fi
-
-# Setup on first run
-if [ ! -d "$VENV_DIR" ]; then
-  echo "gazectl: first-run setup..."
-  mkdir -p "$GAZECTL_DIR"
-
-  echo "  creating python venv..."
-  python3 -m venv "$VENV_DIR"
-
-  echo "  installing dependencies..."
-  "$VENV_DIR/bin/pip" install -q -r "$REQUIREMENTS"
-
-  echo "  done."
-fi
-
-# Download model if missing
-if [ ! -f "$MODEL_FILE" ]; then
-  echo "  downloading face landmarker model..."
-  curl -sL -o "$MODEL_FILE" "$MODEL_URL"
-  echo "  done."
-fi
-
-# Symlink model into script dir if needed (gazectl.py looks for it there)
-SCRIPT_MODEL="$SCRIPT_DIR/face_landmarker.task"
-if [ ! -f "$SCRIPT_MODEL" ] && [ ! -L "$SCRIPT_MODEL" ]; then
-  ln -s "$MODEL_FILE" "$SCRIPT_MODEL" 2>/dev/null || true
-fi
-
-exec "$VENV_DIR/bin/python" "$GAZECTL_PY" "$@"
+exec "$BIN_DIR/gazectl-bin" "$@"

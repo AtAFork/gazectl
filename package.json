@@ -1,15 +1,17 @@
 {
   "name": "gazectl",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Head tracking display focus switcher for macOS + Aerospace",
   "bin": {
     "gazectl": "bin/gazectl"
   },
   "files": [
     "bin/gazectl",
-    "gazectl.py",
-    "requirements.txt"
+    "bin/gazectl-bin"
   ],
+  "scripts": {
+    "build": "swift build -c release"
+  },
   "keywords": [
     "head-tracking",
     "display",
@@ -17,8 +19,9 @@
     "focus",
     "aerospace",
     "macos",
-    "mediapipe",
-    "webcam"
+    "webcam",
+    "swift",
+    "vision"
   ],
   "os": ["darwin"],
   "author": "Sahaj Jain",

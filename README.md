@@ -2,7 +2,7 @@
 
 Head tracking display focus switcher for macOS + [Aerospace](https://github.com/nikitabobko/AerospaceWM).
 
-Uses your webcam and MediaPipe to detect which way your head is turned, then switches Aerospace monitor focus automatically.
+Uses your webcam and Apple's Vision framework to detect which way your head is turned, then switches Aerospace monitor focus automatically.
 
 ## Install
 
@@ -16,7 +16,7 @@ Or run directly:
 npx gazectl
 ```
 
-Requires Python 3.9+ and [Aerospace](https://github.com/nikitabobko/AerospaceWM). First run sets up a Python venv and downloads the MediaPipe model automatically.
+Requires macOS 14+ and [Aerospace](https://github.com/nikitabobko/AerospaceWM).
 
 ## Usage
 
@@ -40,14 +40,20 @@ On first run, gazectl asks you to look at each monitor and press Enter. It sampl
 | `--calibrate` | off | Force recalibration |
 | `--calibration-file` | `~/.local/share/gazectl/calibration.json` | Custom calibration path |
 | `--camera` | 0 | Camera index |
-| `--preview` | off | Show camera preview (steals focus — calibration only) |
 | `--verbose` | off | Print yaw angle continuously |
 
 ## How it works
 
 1. **Calibrate** — look at each monitor, gazectl records the yaw angle
-2. **Track** — MediaPipe Face Landmarker detects head yaw in real-time (~30fps)
+2. **Track** — Apple Vision detects head yaw in real-time (~30fps)
 3. **Switch** — when yaw crosses the midpoint between calibrated angles, fires `aerospace focus-monitor`
+
+## Build from source
+
+```bash
+swift build -c release
+cp .build/release/gazectl /usr/local/bin/gazectl
+```
 
 ## License
 
