@@ -87,6 +87,14 @@ enum CLI {
         print()
     }
 
+    // MARK: - Version
+
+    static let version = "0.5.1"
+
+    static func printVersion() {
+        print("gazectl \(version)")
+    }
+
     // MARK: - Styled help
 
     static func printUsage() {
@@ -98,6 +106,7 @@ enum CLI {
           \(Style.cyan)--calibration-file\(Style.reset) F   Path to calibration file
           \(Style.cyan)--camera\(Style.reset) N             Camera index \(Style.dim)(default: 0)\(Style.reset)
           \(Style.cyan)--verbose\(Style.reset)              Print yaw angle continuously
+          \(Style.cyan)-v, --version\(Style.reset)          Print version
           \(Style.cyan)-h, --help\(Style.reset)             Show this help
         """)
     }

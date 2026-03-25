@@ -40,6 +40,9 @@ func parseArgs() -> Config {
             config.cameraIndex = idx
         case "--verbose":
             config.verbose = true
+        case "-v", "--version":
+            CLI.printVersion()
+            exit(0)
         case "-h", "--help":
             CLI.printUsage()
             exit(0)
@@ -147,20 +150,24 @@ CLI.printStartupSummary(
 
 // 5. Tracking loop
 var currentMonitor = MonitorManager.currentMonitor()
+let switchCooldown: TimeInterval = 0.5   // minimum seconds between switches
+var lastSwitchTime = Date.distantPast
 
 while running {
     if let yaw = faceTracker.latestYaw {
-        let target = Calibration.targetMonitor(yaw: yaw, calibration: cal)
+        let target = Calibration.targetMonitor(yaw: yaw, calibration: cal, currentMonitor: currentMonitor ?? 0)
 
         if config.verbose {
             let targetName = monitors.first { $0.id == target }?.name ?? "?"
             CLI.printTrackingStatus(yaw: yaw, targetName: targetName)
         }
 
-        if target != currentMonitor {
+        let now = Date()
+        if target != currentMonitor && now.timeIntervalSince(lastSwitchTime) >= switchCooldown {
             let name = monitors.first { $0.id == target }?.name ?? "?"
             MonitorManager.focusMonitor(target)
             currentMonitor = target
+            lastSwitchTime = now
             CLI.printFocusSwitch(name)
         }
     }

@@ -116,7 +116,12 @@ enum Calibration {
 
     // MARK: - Target monitor selection
 
-    static func targetMonitor(yaw: Double, calibration: [String: Double]) -> Int {
+    /// Fraction of the gap between adjacent monitors used as hysteresis on each
+    /// side of the midpoint.  A value of 0.15 means you must cross 15% past the
+    /// midpoint before switching, creating a 30% dead-zone that prevents flicker.
+    private static let hysteresis = 0.15
+
+    static func targetMonitor(yaw: Double, calibration: [String: Double], currentMonitor: Int = 0) -> Int {
         let sorted = calibration.sorted { $0.value < $1.value }
 
         guard let first = sorted.first, let last = sorted.last else { return 0 }
@@ -128,8 +133,23 @@ enum Calibration {
             return Int(last.key) ?? 0
         }
 
+        let currentKey = String(currentMonitor)
+
         for i in 0..<(sorted.count - 1) {
-            let boundary = (sorted[i].value + sorted[i + 1].value) / 2.0
+            let midpoint = (sorted[i].value + sorted[i + 1].value) / 2.0
+            let margin  = (sorted[i + 1].value - sorted[i].value) * hysteresis
+
+            // Shift the boundary away from whichever adjacent monitor we're on,
+            // so the user has to look further before a switch triggers.
+            let boundary: Double
+            if currentKey == sorted[i].key {
+                boundary = midpoint + margin   // harder to leave left monitor
+            } else if currentKey == sorted[i + 1].key {
+                boundary = midpoint - margin   // harder to leave right monitor
+            } else {
+                boundary = midpoint
+            }
+
             if yaw < boundary {
                 return Int(sorted[i].key) ?? 0
             }
