@@ -3,8 +3,9 @@
 ██╔════╝ ██╔══██╗╚══███╔╝██╔════╝██╔════╝╚══██╔══╝██║
 ██║  ███╗███████║  ███╔╝ █████╗  ██║        ██║   ██║
 ██║   ██║██╔══██║ ███╔╝  ██╔══╝  ██║        ██║   ██║
-╚██████╔╝██║  ██║███████╗███████╗╚██████╗   ██║   ███████╗
- ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝</pre>
+     ╚██████╔╝██║  ██║███████╗███████╗╚██████╗   ██║   ███████╗
+      ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝
+</pre>
 
 **Head tracking display switcher for macOS**
 
@@ -16,7 +17,7 @@
 
 ---
 
-gazectl uses your webcam to detect which monitor you're looking at and automatically switches focus to it. It uses Apple's Vision framework for real-time face tracking and works with the [Aerospace](https://github.com/nikitabobko/AerospaceWM) tiling window manager.
+`gazectl` uses your webcam to detect which monitor you're looking at and automatically switches focus to it. It uses Apple's Vision framework for real-time face tracking and works with the [Aerospace](https://github.com/nikitabobko/AerospaceWM) tiling window manager.
 
 > macOS only. Requires macOS 14+ and [Aerospace](https://github.com/nikitabobko/AerospaceWM).
 
@@ -68,7 +69,3 @@ On first run, gazectl asks you to look at each monitor and press Enter. It sampl
 swift build -c release
 cp .build/release/gazectl /usr/local/bin/gazectl
 ```
-
-## License
-
-MIT
