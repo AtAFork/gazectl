@@ -1,6 +1,6 @@
 {
   "name": "gazectl",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Head tracking display focus switcher for macOS + Aerospace",
   "bin": {
     "gazectl": "bin/gazectl"
@@ -23,7 +23,9 @@
     "swift",
     "vision"
   ],
-  "os": ["darwin"],
+  "os": [
+    "darwin"
+  ],
   "author": "Sahaj Jain",
   "license": "MIT",
   "repository": {
