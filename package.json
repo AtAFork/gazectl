@@ -1,6 +1,6 @@
 {
   "name": "gazectl",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Head tracking display focus switcher for macOS",
   "bin": {
     "gazectl": "bin/gazectl"
@@ -10,6 +10,8 @@
     "bin/gazectl-bin"
   ],
   "scripts": {
+    "build:npm-binary": "./scripts/build-npm-binary.sh",
+    "prepack": "./scripts/build-npm-binary.sh",
     "sync-version": "./scripts/sync-version.sh",
     "version": "./scripts/sync-version.sh",
     "build": "npm run sync-version && swift build -c release"

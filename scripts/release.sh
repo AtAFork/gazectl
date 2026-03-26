@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 VERSION="$1"
 if [ -z "$VERSION" ]; then
@@ -7,6 +9,8 @@ if [ -z "$VERSION" ]; then
   echo "example: ./scripts/release.sh 0.2.0"
   exit 1
 fi
+
+cd "$ROOT_DIR"
 
 # Ensure clean working tree
 if [ -n "$(git status --porcelain)" ]; then
@@ -26,19 +30,18 @@ npm version "$VERSION" --no-git-tag-version
 ./scripts/sync-version.sh
 
 echo "==> Building universal binary..."
-swift build -c release --arch arm64
-swift build -c release --arch x86_64
-lipo -create \
-  .build/arm64-apple-macosx/release/gazectl \
-  .build/x86_64-apple-macosx/release/gazectl \
-  -output bin/gazectl-bin
-chmod +x bin/gazectl-bin
+cleanup() {
+  rm -f "$ROOT_DIR/bin/gazectl-bin"
+}
+trap cleanup EXIT
+
+./scripts/build-npm-binary.sh
 
 SIZE=$(ls -lh bin/gazectl-bin | awk '{print $5}')
 echo "    binary: bin/gazectl-bin ($SIZE)"
 
 echo "==> Committing and tagging..."
-git add package.json Sources/BuildInfo.swift
+git add package.json Sources/BuildInfo.swift scripts/build-npm-binary.sh scripts/release.sh
 git commit -m "v$VERSION"
 git tag "v$VERSION"
 
@@ -52,9 +55,6 @@ gh release create "v$VERSION" bin/gazectl-bin \
 
 echo "==> Publishing to npm..."
 npm publish
-
-echo "==> Cleaning up..."
-rm bin/gazectl-bin
 
 echo ""
 echo "Released v$VERSION"

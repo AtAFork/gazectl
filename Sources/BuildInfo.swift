@@ -1,3 +1,3 @@
 enum BuildInfo {
-    static let version = "0.8.1"
+    static let version = "0.8.2"
 }
