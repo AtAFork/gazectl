@@ -78,3 +78,14 @@ On first run, gazectl asks you to look at each monitor and press Enter. It sampl
 swift build -c release
 cp .build/release/gazectl /usr/local/bin/gazectl
 ```
+
+# Star History
+
+<p align="center">
+  <a target="_blank" href="https://star-history.com/#jnsahaj/gazectl&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jnsahaj/gazectl&type=Date&theme=dark">
+      <img alt="GitHub Star History for jnsahaj/gazectl" src="https://api.star-history.com/svg?repos=jnsahaj/gazectl&type=Date">
+    </picture>
+  </a>
+</p>
