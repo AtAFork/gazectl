@@ -1,7 +1,6 @@
 import Foundation
 import CoreGraphics
 import AppKit
-import ApplicationServices
 
 struct Monitor {
     let id: Int
@@ -63,35 +62,33 @@ enum MonitorManager {
     }
 
     static func focusedMonitor() -> Int? {
-        let systemWide = AXUIElementCreateSystemWide()
-        var focusedAppValue: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(
-            systemWide,
-            kAXFocusedApplicationAttribute as CFString,
-            &focusedAppValue
-        ) == .success,
-        let focusedAppValue,
-        CFGetTypeID(focusedAppValue) == AXUIElementGetTypeID() else {
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else {
+            return nil
+        }
+        let pid = frontApp.processIdentifier
+
+        guard let windowList = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements],
+            kCGNullWindowID
+        ) as? [[String: Any]] else {
             return nil
         }
 
-        let appElement = unsafeBitCast(focusedAppValue, to: AXUIElement.self)
-        for attribute in [kAXFocusedWindowAttribute, kAXMainWindowAttribute] {
-            var windowValue: CFTypeRef?
-            guard AXUIElementCopyAttributeValue(
-                appElement,
-                attribute as CFString,
-                &windowValue
-            ) == .success,
-            let windowValue,
-            CFGetTypeID(windowValue) == AXUIElementGetTypeID() else {
+        for windowInfo in windowList {
+            guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int32,
+                  windowPID == pid,
+                  let layer = windowInfo[kCGWindowLayer as String] as? Int,
+                  layer == 0,
+                  let boundsDict = windowInfo[kCGWindowBounds as String] as? NSDictionary else {
                 continue
             }
 
-            let windowElement = unsafeBitCast(windowValue, to: AXUIElement.self)
-            if let frame = windowFrame(for: windowElement) {
-                return monitorContaining(point: CGPoint(x: frame.midX, y: frame.midY))
+            var rect = CGRect.zero
+            guard CGRectMakeWithDictionaryRepresentation(boundsDict as CFDictionary, &rect) else {
+                continue
             }
+
+            return monitorContaining(point: CGPoint(x: rect.midX, y: rect.midY))
         }
 
         return nil
@@ -104,7 +101,7 @@ enum MonitorManager {
         let hasCursor = cursorMonitor == id
 
         if hasCursor {
-            // Cursor already on target — use AX API to check if focused
+            // Cursor already on target — check if frontmost app window is here
             let axFocused = focusedMonitor() == id
             return axFocused ? .none : .click
         } else {
@@ -157,41 +154,6 @@ enum MonitorManager {
         } else if debug {
             CLI.debug("[NO-CLICK] transition=\(transition) — appliesFocus=false")
         }
-    }
-
-    private static func windowFrame(for element: AXUIElement) -> CGRect? {
-        var positionValue: CFTypeRef?
-        var sizeValue: CFTypeRef?
-
-        guard AXUIElementCopyAttributeValue(
-            element,
-            kAXPositionAttribute as CFString,
-            &positionValue
-        ) == .success,
-        AXUIElementCopyAttributeValue(
-            element,
-            kAXSizeAttribute as CFString,
-            &sizeValue
-        ) == .success,
-        let positionValue,
-        let sizeValue,
-        CFGetTypeID(positionValue) == AXValueGetTypeID(),
-        CFGetTypeID(sizeValue) == AXValueGetTypeID() else {
-            return nil
-        }
-
-        let positionAXValue = unsafeBitCast(positionValue, to: AXValue.self)
-        let sizeAXValue = unsafeBitCast(sizeValue, to: AXValue.self)
-        var position = CGPoint.zero
-        var size = CGSize.zero
-        guard AXValueGetType(positionAXValue) == .cgPoint,
-              AXValueGetType(sizeAXValue) == .cgSize,
-              AXValueGetValue(positionAXValue, .cgPoint, &position),
-              AXValueGetValue(sizeAXValue, .cgSize, &size) else {
-            return nil
-        }
-
-        return CGRect(origin: position, size: size)
     }
 
     private static func monitorContaining(point: CGPoint) -> Int? {
