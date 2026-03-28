@@ -157,14 +157,23 @@ var gazeMonitor = MonitorManager.focusedMonitor() ?? MonitorManager.currentMonit
 var lastAppliedGazeMonitor = gazeMonitor
 let switchCooldown: TimeInterval = 0.5   // minimum seconds between switches
 var lastSwitchTime = Date.distantPast
+var trackingEnabled = true
 
 while running {
-    if let yaw = faceTracker.latestYaw {
+    // Check for double-blink toggle
+    if faceTracker.consumeDoubleBlink() {
+        trackingEnabled.toggle()
+        CLI.printTrackingToggled(enabled: trackingEnabled)
+        if trackingEnabled {
+            // Re-sync gaze monitor to prevent an immediate stale switch
+            gazeMonitor = MonitorManager.focusedMonitor() ?? MonitorManager.currentMonitor()
+            lastAppliedGazeMonitor = gazeMonitor
+        }
+    }
+
+    if trackingEnabled, let yaw = faceTracker.latestYaw {
         let pitch = faceTracker.latestPitch ?? 0.0
         let cursorMonitor = MonitorManager.currentMonitor()
-        // Focus tracking is no longer used for transition decisions.
-        // transition() queries AX API directly when cursor is on target,
-        // and always clicks when moving cursor cross-monitor.
 
         let target = Calibration.targetMonitor(
             yaw: yaw, pitch: pitch,

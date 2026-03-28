@@ -258,8 +258,19 @@ enum CLI {
         }
         print()
         print("  \(Style.dim)Turn your head to switch focus.\(Style.reset)")
+        print("  \(Style.dim)Double-blink to pause/resume tracking.\(Style.reset)")
         print("  \(Style.dim)Press \(Style.reset)Ctrl+C\(Style.dim) to quit.\(Style.reset)")
         print()
+    }
+
+    // MARK: - Tracking toggle
+
+    static func printTrackingToggled(enabled: Bool) {
+        if enabled {
+            print("\(Style.clearLine)\r  \(Style.green)▶\(Style.reset) \(Style.bold)Tracking resumed\(Style.reset)")
+        } else {
+            print("\(Style.clearLine)\r  \(Style.yellow)⏸\(Style.reset) \(Style.bold)Tracking paused\(Style.reset) \(Style.dim)(double-blink to resume)\(Style.reset)")
+        }
     }
 
     // MARK: - Exit
